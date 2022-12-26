@@ -7,65 +7,77 @@
 
 import SwiftUI
 
-let nightlyTasks = [
-    "Check all windows",
-    "Check all doors",
-    "Check that the safe is locked",
-    "Check the mailbox",
-    "Inspect security cameras",
-    "Clear ice from sidewalks",
-    "Document \"strange and unusual\" occurences"
-]
-
-let weeklyTasks = [
-    "Check inside all vacant rooms",
-    "Walk the perimeter of property"
-]
-
-let monthlyTasks = [
-    "Test security alarm",
-    "Test motion detectors",
-    "Test smoke alarms"
-]
-
 struct ContentView: View {
-    @State var theTask = Task(name: "Check all windows", isComplete: false, lastCompleted: nil)
+    @ObservedObject var nightWatchTasks: NightWatchTasks
+    
     var body: some View {
-        VStack{
-            HStack{
-                Image(systemName: theTask.isComplete ? "checkmark.square" : "square")
-                Text(theTask.name)
-            }
-            ControlPanel(theTask: self.$theTask)
-        }
         
-//        NavigationView {
-//            List {
-//                Section(header: TaskSectionHeader(symbolSystemName: "moon.stars", headerText: "Nightly Tasks")) {
-//                    ForEach(nightlyTasks, id: \.self, content: {
-//                        taskName in
-//                        NavigationLink(taskName,
-//                                       destination: DetailsView(task: taskName))
-//                    })
-//                }
-//
-//                Section(header: TaskSectionHeader(symbolSystemName: "sunset", headerText: "Weekly Tasks")) {
-//                    ForEach(weeklyTasks, id: \.self, content: {
-//                        taskName in
-//                        NavigationLink(taskName,
-//                                       destination: DetailsView(task: taskName))
-//                    })
-//                }
-//                Section(header: TaskSectionHeader(symbolSystemName: "calendar", headerText: "Monthly Tasks")) {
-//                    ForEach(monthlyTasks, id: \.self, content: {
-//                        taskName in
-//                        NavigationLink(taskName,
-//                                       destination: DetailsView(task: taskName))
-//                    })
-//                }
-//            }.listStyle(GroupedListStyle())
-//            .navigationTitle("Home")
-//        }
+        NavigationView {
+            List {
+                Section(header: TaskSectionHeader(symbolSystemName: "moon.stars", headerText: "Nightly Tasks")) {
+                    
+                    let taskIndecies = nightWatchTasks.nightlyTasks.indices
+                    let tasks = nightWatchTasks.nightlyTasks
+                    let taskIndexPairs = Array(zip(tasks, taskIndecies))
+                    
+                    ForEach(taskIndexPairs, id:\.0.id, content: {
+                        task, taskIndex in
+                        
+                        let nightWatchTasksWrapper = $nightWatchTasks
+                        let tasksBinding = nightWatchTasksWrapper.nightlyTasks
+                        let taskBinding = tasksBinding[taskIndex]
+                        
+                        NavigationLink(
+                            destination: DetailsView(task: taskBinding),
+                            label: {
+                                TaskRow(task: task)
+                            })
+                    })
+                }
+
+                Section(header: TaskSectionHeader(symbolSystemName: "sunset", headerText: "Weekly Tasks")) {
+                    
+                    let taskIndecies = nightWatchTasks.weeklyTasks.indices
+                    let tasks = nightWatchTasks.weeklyTasks
+                    let taskIndexPairs = Array(zip(tasks, taskIndecies))
+                    
+                    ForEach(taskIndexPairs, id:\.0.id, content: {
+                        task, taskIndex in
+                        
+                        let nightWatchTasksWrapper = $nightWatchTasks
+                        let tasksBinding = nightWatchTasksWrapper.weeklyTasks
+                        let taskBinding = tasksBinding[taskIndex]
+
+                        NavigationLink(
+                            destination: DetailsView(task: taskBinding),
+                            label: {
+                                TaskRow(task: task)
+                            })
+                    })
+                }
+                Section(header: TaskSectionHeader(symbolSystemName: "calendar", headerText: "Monthly Tasks")) {
+                    
+                    let taskIndecies = nightWatchTasks.monthlyTasks.indices
+                    let tasks = nightWatchTasks.monthlyTasks
+                    let taskIndexPairs = Array(zip(tasks, taskIndecies))
+                    
+                    ForEach(taskIndexPairs, id:\.0.id, content: {
+                        task, taskIndex in
+                        
+                        let nightWatchTasksWrapper = $nightWatchTasks
+                        let tasksBinding = nightWatchTasksWrapper.monthlyTasks
+                        let taskBinding = tasksBinding[taskIndex]
+
+                        NavigationLink(
+                            destination: DetailsView(task: taskBinding),
+                            label: {
+                                TaskRow(task: task)
+                            })
+                    })
+                }
+            }.listStyle(GroupedListStyle())
+            .navigationTitle("Home")
+        }
     }
 }
 
@@ -84,31 +96,55 @@ struct TaskSectionHeader: View {
     }
 }
 
-
+//struct ControlPanel: View {
+//
+//    var body: some View {
+//        HStack{
+//            if theTask.isComplete == false{
+//                Button(action: {
+//                    theTask.isComplete = true
+//                }) {
+//                    Text("Mark Complete")
+//                }.padding(.top)
+//            } else {
+//                Button(action: {
+//                    theTask.isComplete = false
+//                }) {
+//                    Text("Reset")
+//                }.padding(.top)
+//            }
+//        }
+//    }
+//}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        let nightWatchTasks = NightWatchTasks()
+        Group{
+            ContentView(nightWatchTasks: nightWatchTasks)
+            TaskRow(task: Task(name: "Test task", isComplete: false, lastCompleted: nil))
+                .previewLayout(.fixed(width:300, height:70))
+        }
+        
     }
 }
 
-struct ControlPanel: View {
-    @Binding var theTask: Task
-    
+struct TaskRow: View {
+    let task: Task
     var body: some View {
-        HStack{
-            if theTask.isComplete == false{
-                Button(action: {
-                    theTask.isComplete = true
-                }) {
-                    Text("Mark Complete")
-                }.padding(.top)
+        VStack {
+            if task.isComplete {
+                HStack {
+                    Image(systemName: "checkmark.square")
+                    Text(task.name)
+                        .foregroundColor(.gray)
+                        .strikethrough()
+                }
             } else {
-                Button(action: {
-                    theTask.isComplete = false
-                }) {
-                    Text("Reset")
-                }.padding(.top)
+                HStack {
+                    Image(systemName: "square")
+                    Text(task.name)
+                }
             }
         }
     }
