@@ -29,34 +29,43 @@ let monthlyTasks = [
 ]
 
 struct ContentView: View {
+    @State var theTask = Task(name: "Check all windows", isComplete: false, lastCompleted: nil)
     var body: some View {
-        NavigationView {
-            List {
-                Section(header: TaskSectionHeader(symbolSystemName: "moon.stars", headerText: "Nightly Tasks")) {
-                    ForEach(nightlyTasks, id: \.self, content: {
-                        taskName in
-                        NavigationLink(taskName,
-                                       destination: DetailsView(task: taskName))
-                    })
-                }
-                
-                Section(header: TaskSectionHeader(symbolSystemName: "sunset", headerText: "Weekly Tasks")) {
-                    ForEach(weeklyTasks, id: \.self, content: {
-                        taskName in
-                        NavigationLink(taskName,
-                                       destination: DetailsView(task: taskName))
-                    })
-                }
-                Section(header: TaskSectionHeader(symbolSystemName: "calendar", headerText: "Monthly Tasks")) {
-                    ForEach(monthlyTasks, id: \.self, content: {
-                        taskName in
-                        NavigationLink(taskName,
-                                       destination: DetailsView(task: taskName))
-                    })
-                }
-            }.listStyle(GroupedListStyle())
-            .navigationTitle("Home")
+        VStack{
+            HStack{
+                Image(systemName: theTask.isComplete ? "checkmark.square" : "square")
+                Text(theTask.name)
+            }
+            ControlPanel(theTask: self.$theTask)
         }
+        
+//        NavigationView {
+//            List {
+//                Section(header: TaskSectionHeader(symbolSystemName: "moon.stars", headerText: "Nightly Tasks")) {
+//                    ForEach(nightlyTasks, id: \.self, content: {
+//                        taskName in
+//                        NavigationLink(taskName,
+//                                       destination: DetailsView(task: taskName))
+//                    })
+//                }
+//
+//                Section(header: TaskSectionHeader(symbolSystemName: "sunset", headerText: "Weekly Tasks")) {
+//                    ForEach(weeklyTasks, id: \.self, content: {
+//                        taskName in
+//                        NavigationLink(taskName,
+//                                       destination: DetailsView(task: taskName))
+//                    })
+//                }
+//                Section(header: TaskSectionHeader(symbolSystemName: "calendar", headerText: "Monthly Tasks")) {
+//                    ForEach(monthlyTasks, id: \.self, content: {
+//                        taskName in
+//                        NavigationLink(taskName,
+//                                       destination: DetailsView(task: taskName))
+//                    })
+//                }
+//            }.listStyle(GroupedListStyle())
+//            .navigationTitle("Home")
+//        }
     }
 }
 
@@ -80,5 +89,27 @@ struct TaskSectionHeader: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+    }
+}
+
+struct ControlPanel: View {
+    @Binding var theTask: Task
+    
+    var body: some View {
+        HStack{
+            if theTask.isComplete == false{
+                Button(action: {
+                    theTask.isComplete = true
+                }) {
+                    Text("Mark Complete")
+                }.padding(.top)
+            } else {
+                Button(action: {
+                    theTask.isComplete = false
+                }) {
+                    Text("Reset")
+                }.padding(.top)
+            }
+        }
     }
 }
